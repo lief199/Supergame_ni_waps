@@ -1,0 +1,278 @@
+:root {
+  --ring-w: 1100px;
+  --ring-h: 550px;
+  --ui-bg: rgba(29, 145, 93, 0.85);
+  --p1: #0ea5e9;
+  --p2: #f97316;
+  --hp: #22c55e;
+  --chip: #ef4444;
+  --stam: #a855f7;
+  --glow: 0 0 15px rgba(34,197,94,0.6);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: linear-gradient(135deg, #1c2533, #2e3b4e);
+  color: #e5e7eb;
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 12px 40px;
+}
+
+/* ---------------- Header ---------------- */
+header {
+  max-width: var(--ring-w);
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+header h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #22c55e;
+  text-shadow: 0 0 8px rgba(34,197,94,0.6);
+}
+header .btn {
+  background: var(--ui-bg);
+  border: 1px solid #2a2f3a;
+  padding: 8px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  color: white;
+  transition: background 0.2s, transform 0.15s;
+}
+header .btn:hover {
+  background: #16a34a;
+  transform: scale(1.05);
+}
+
+/* ---------------- Game Area ---------------- */
+.wrap {
+  position: relative;
+  width: 100%;
+  max-width: var(--ring-w);
+}
+canvas {
+  width: 100%;
+  height: auto;
+  border-radius: 18px;
+  display: block;
+  box-shadow: 0 10px 40px rgba(0,0,0,.6);
+  background: #2f3545;
+}
+
+/* ---------------- HUD ---------------- */
+.hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.bars {
+  display: grid;
+  grid-template-columns: 1fr 120px 1fr;
+  align-items: center;
+  gap: 10px;
+}
+.bar {
+  height: 16px;
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+.bar .fill {
+  height: 100%;
+  background: var(--hp);
+  width: 100%;
+  box-shadow: inset var(--glow);
+  transition: width 0.25s linear;
+}
+.bar .chip {
+  position: absolute;
+  inset: 0;
+  background: var(--chip);
+  opacity: .25;
+  width: 0;
+}
+.bar.stamina .fill { background: var(--stam); }
+.name {
+  font-size: 14px;
+  opacity: .9;
+  margin-top: 6px;
+}
+.mid { text-align: center; }
+.timer {
+  display: inline-block;
+  padding: 6px 12px;
+  background: var(--ui-bg);
+  border: 1px solid #2a2f3a;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 18px;
+  box-shadow: var(--glow);
+}
+
+/* ---------------- Scoreboard ---------------- */
+.scoreboard {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-weight: bold;
+  font-size: 18px;
+  text-shadow: 0 0 8px rgba(0,0,0,0.6);
+}
+
+/* ---------------- Start & Rematch Screens ---------------- */
+#startScreen, #rematchScreen {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 600px;
+  padding: 30px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;  
+  align-items: center;      
+  background: rgba(0,0,0,0.92);
+  color: white;
+  text-align: center;
+  border-radius: 20px;
+  z-index: 1000;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+  overflow: hidden;
+}
+#startScreen h1, #rematchScreen h1 {
+  margin-bottom: 16px;
+  font-size: 28px;
+  color: #22c55e;
+  text-shadow: 0 0 8px rgba(34,197,94,0.6);
+}
+#startScreen button, #rematchScreen button {
+  font-size: 22px;
+  padding: 12px 32px;
+  border-radius: 12px;
+  cursor: pointer;
+  margin-top: 20px;
+  background: #22c55e;
+  border: none;
+  color: white;
+  transition: background 0.2s, transform 0.15s;
+}
+#startScreen button:hover, #rematchScreen button:hover {
+  background: #16a34a;
+  transform: scale(1.05);
+}
+
+/* ---------------- Player Inputs ---------------- */
+.player-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 300px;
+}
+.player-inputs input {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background: #111827;
+  color: white;
+  font-size: 16px;
+  text-align: center;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+.player-inputs input:focus {
+  outline: none;
+  border: 1px solid #22c55e;
+  box-shadow: var(--glow);
+}
+
+/* ---------------- Leaderboard ---------------- */
+#leaderboard {
+  max-width: 720px;
+  margin: 18px auto;
+  padding: 16px;
+  text-align: center;
+  background: rgba(0,0,0,0.65);
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,.5);
+}
+#leaderboard h3 {
+  margin: 8px 0 12px;
+  font-size: 20px;
+  color: #22c55e;
+}
+#leaderboardList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+#leaderboardList li {
+  padding: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  font-size: 16px;
+}
+#leaderboardList li:nth-child(1) { color: gold; font-weight: bold; }
+#leaderboardList li:nth-child(2) { color: silver; }
+#leaderboardList li:nth-child(3) { color: #cd7f32; }
+
+/* ---------------- Controls ---------------- */
+.controls {
+  max-width: var(--ring-w);
+  width: 100%;
+  background: var(--ui-bg);
+  border: 1px solid #2a2f3a;
+  padding: 12px 16px;
+  border-radius: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.controls h3 { margin: 0 0 6px; font-size: 14px; color: #22c55e; }
+.controls code {
+  background: #111827;
+  border: 1px solid #1f2937;
+  padding: 2px 6px;
+  border-radius: 6px;
+  color: #e5e7eb;
+}
+.legend { font-size: 13px; opacity: .9; }
+
+footer {
+  opacity: .6;
+  font-size: 12px;
+  margin-top: 10px;
+}
+
+
+.pause-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: none; /* hidden by default */
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+.pause-content {
+  background: #1f2937;
+  color: white;
+  padding: 20px 40px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 5px 20px rgba(0,0,0,.5);
+}
