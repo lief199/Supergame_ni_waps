@@ -89,17 +89,17 @@
 
   // -------------------- Load Sprites --------------------
   const P1sprites = {
-    idle: Object.assign(new Image(), { src: 'images/blue.png' }),
-    left: Object.assign(new Image(), { src: 'images/blue-leftjab.png' }),
-    right: Object.assign(new Image(), { src: 'images/blue-rightjab.png' }),
-    shield: Object.assign(new Image(), { src: 'images/blue-shield.png' })
+    idle: Object.assign(new Image(), { src: './images/blue.png' }),
+    left: Object.assign(new Image(), { src: './images/blue-leftjab.png' }),
+    right: Object.assign(new Image(), { src: './images/blue-rightjab.png' }),
+    shield: Object.assign(new Image(), { src: './images/blue-shield.png' })
   };
 
   const P2sprites = {
-    idle: Object.assign(new Image(), { src: 'images/red.png' }),
-    left: Object.assign(new Image(), { src: 'images/red-left.png' }),
-    right: Object.assign(new Image(), { src: 'images/red-right.png' }),
-    shield: Object.assign(new Image(), { src: 'images/red-shield.png' })
+    idle: Object.assign(new Image(), { src: './images/red.png' }),
+    left: Object.assign(new Image(), { src: './images/red-left.png' }),
+    right: Object.assign(new Image(), { src: './images/red-right.png' }),
+    shield: Object.assign(new Image(), { src: './images/red-shield.png' })
   };
 
   // -------------------- World & Game State --------------------
@@ -466,3 +466,4 @@
   getLeaderboard();
   requestAnimationFrame(loop);
 })();
+
