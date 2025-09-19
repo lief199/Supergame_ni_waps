@@ -276,3 +276,14 @@ footer {
   text-align: center;
   box-shadow: 0 5px 20px rgba(0,0,0,.5);
 }
+#resumeBtn {
+  margin-top: 16px;
+  padding: 10px 20px;
+  background: #22c55e;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
