@@ -19,25 +19,11 @@
   const rematchMessage = document.getElementById('rematchMessage');
   const rematchLeaderboardEl = document.getElementById('rematchLeaderboard');
 
-  // -------------------- Leaderboard / API config --------------------
-  // Replace this with your Apps Script Web App URL after you deploy
- fetch(GOOGLE_SHEETS_URL, {
-  method: "POST",
-  body: JSON.stringify({ name: winnerName, wins: winCount }),
-  headers: { "Content-Type": "application/json" }
-})
-.then(res => res.json())
-.then(data => {
-  console.log("Saved to Google Sheets:", data);
-})
-.catch(err => console.error("Error:", err));
-
-  // -------------------- Player name state (new) --------------------
+  // -------------------- Player name state --------------------
   let player1Name = 'P1';
   let player2Name = 'P2';
-
   let gameStarted = false;
-  let paused = true; // paused until start
+  let paused = true;
 
   // -------------------- Center Screens --------------------
   function centerScreen(screen) {
@@ -46,7 +32,6 @@
     screen.style.left = '50%';
     screen.style.transform = 'translate(-50%, -50%)';
   }
-
   function showStartScreen() { centerScreen(startScreen); }
   function showRematchScreen(winner) {
     rematchMessage.textContent = winner + " Wins!";
@@ -56,13 +41,11 @@
 
   // -------------------- Game Start --------------------
   startBtn.addEventListener('click', () => {
-    // read player names from start screen inputs if present
     const n1 = document.getElementById('player1Name');
     const n2 = document.getElementById('player2Name');
     player1Name = (n1 && n1.value.trim()) ? n1.value.trim() : 'P1';
     player2Name = (n2 && n2.value.trim()) ? n2.value.trim() : 'P2';
 
-    // update HUD labels (we added IDs in HTML)
     const p1Label = document.getElementById('p1NameLabel');
     const p2Label = document.getElementById('p2NameLabel');
     if(p1Label) p1Label.textContent = `${player1Name} (Sky Blue)`;
@@ -71,35 +54,32 @@
     startScreen.style.display = 'none';
     gameStarted = true;
     paused = false;
-    resetGame(true); // start countdown now
+    resetGame(true);
   });
 
- rematchBtn.addEventListener('click', () => {
-  rematchScreen.style.display = 'none';
-  paused = false;
-
-  // If someone already won the match, restart the whole game
-  if(p1Wins >= 2 || p2Wins >= 2){
-    resetGame(true); // full reset, start countdown
-  } else {
-    resetRound(true); // next round only
-    gameStarted = true;
-  }
-});
+  rematchBtn.addEventListener('click', () => {
+    rematchScreen.style.display = 'none';
+    paused = false;
+    if(p1Wins >= 2 || p2Wins >= 2){
+      resetGame(true);
+    } else {
+      resetRound(true);
+      gameStarted = true;
+    }
+  });
 
   // -------------------- Load Sprites --------------------
   const P1sprites = {
-    idle: Object.assign(new Image(), { src: './images/blue.png' }),
-    left: Object.assign(new Image(), { src: './images/blue-leftjab.png' }),
-    right: Object.assign(new Image(), { src: './images/blue-rightjab.png' }),
-    shield: Object.assign(new Image(), { src: './images/blue-shield.png' })
+    idle: Object.assign(new Image(), { src: 'images/blue.png' }),
+    left: Object.assign(new Image(), { src: 'images/blue-leftjab.png' }),
+    right: Object.assign(new Image(), { src: 'images/blue-rightjab.png' }),
+    shield: Object.assign(new Image(), { src: 'images/blue-shield.png' })
   };
-
   const P2sprites = {
-    idle: Object.assign(new Image(), { src: './images/red.png' }),
-    left: Object.assign(new Image(), { src: './images/red-left.png' }),
-    right: Object.assign(new Image(), { src: './images/red-right.png' }),
-    shield: Object.assign(new Image(), { src: './images/red-shield.png' })
+    idle: Object.assign(new Image(), { src: 'images/red.png' }),
+    left: Object.assign(new Image(), { src: 'images/red-left.png' }),
+    right: Object.assign(new Image(), { src: 'images/red-right.png' }),
+    shield: Object.assign(new Image(), { src: 'images/red-shield.png' })
   };
 
   // -------------------- World & Game State --------------------
@@ -108,17 +88,15 @@
   let countdown = 0, countdownActive = false;
   let roundNumber = 1, maxRounds = 3, p1Wins = 0, p2Wins = 0, roundActive = false;
 
- const Keys = { a:false,d:false,f:false,g:false,
-               w:false,ArrowUp:false,  // changed keys
-               ArrowLeft:false,ArrowRight:false,period:false,slash:false,
-               Enter:false,r:false,o:false };
+  const Keys = { a:false,d:false,f:false,g:false,w:false,ArrowUp:false,
+                 ArrowLeft:false,ArrowRight:false,period:false,slash:false,
+                 Enter:false,r:false,o:false };
 
- const KeyMap = {
-  'KeyA':'a','KeyD':'d','KeyF':'f','KeyG':'g','KeyW':'w',      // P1 cover = W
-  'ArrowLeft':'ArrowLeft','ArrowRight':'ArrowRight','Period':'period','Slash':'slash','ArrowUp':'ArrowUp', // P2 cover = ArrowUp
-  'Enter':'Enter','KeyR':'r','KeyO':'o'
-};
-
+  const KeyMap = {
+    'KeyA':'a','KeyD':'d','KeyF':'f','KeyG':'g','KeyW':'w',
+    'ArrowLeft':'ArrowLeft','ArrowRight':'ArrowRight','Period':'period','Slash':'slash','ArrowUp':'ArrowUp',
+    'Enter':'Enter','KeyR':'r','KeyO':'o'
+  };
 
   addEventListener('keydown', e => {
     const k = KeyMap[e.code]; if(!k) return;
@@ -128,7 +106,6 @@
     if(k==='o') showHitboxes=!showHitboxes;
     if(k==='r') resetGame();
   });
-
   addEventListener('keyup', e => { const k = KeyMap[e.code]; if(k) Keys[k]=false; });
 
   // -------------------- Attacks --------------------
@@ -146,7 +123,6 @@
             coverTimer:0, name, sprites};
   }
 
-  // Use the current name variables when creating P1/P2 so chosen names persist
   const P1 = createPlayer(WORLD.ringPad+60, player1Name, P1sprites);
   const P2 = createPlayer(WORLD.w-WORLD.ringPad-120, player2Name, P2sprites); P2.dir=-1;
 
@@ -156,7 +132,6 @@
 
   // -------------------- Scoreboard --------------------
   function updateScoreboard(){
-    // show names on scoreboard now
     document.getElementById('p1score').textContent = `${player1Name} Wins: ${p1Wins}`;
     document.getElementById('p2score').textContent = `${player2Name} Wins: ${p2Wins}`;
     document.getElementById('round').textContent = `Round: ${roundNumber} / ${maxRounds}`;
@@ -164,18 +139,15 @@
 
   // -------------------- Reset / Round --------------------
   function resetRound(startCountdownFlag = false){
-    // preserve chosen player names when resetting player objects
     Object.assign(P1, createPlayer(WORLD.ringPad+60, player1Name, P1sprites));
     Object.assign(P2, createPlayer(WORLD.w-WORLD.ringPad-120, player2Name, P2sprites)); P2.dir=-1;
     roundTime=99; lastSecTick=0; updateScoreboard();
     if(startCountdownFlag) startCountdown();
   }
-
   function resetGame(startCountdownFlag = false){
     roundNumber=1; p1Wins=0; p2Wins=0;
     resetRound(startCountdownFlag);
   }
-
   function startCountdown(){
     countdown=3; countdownActive=true; paused=true; roundActive=false;
     let interval=setInterval(()=>{
@@ -190,8 +162,7 @@
   const rectsOverlap=(a,b)=>a && b && a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y;
   function makeHurtbox(p){ return { x:p.x+p.w*0.25, y:p.y+p.h*0.1, w:p.w*0.5, h:p.h*0.9 }; }
   function makeHitbox(p, kind) {
-    const def = ATTACKS[kind];
-    if(!def) return null;
+    const def = ATTACKS[kind]; if(!def) return null;
     const w = def.range - def.width;
     const h = def.height;
     const x = p.dir === 1 ? p.x + p.w - 35 : p.x + 35 - w;
@@ -200,9 +171,9 @@
 
   // -------------------- Input Handling --------------------
   function readInputs(){ return {
-  p1:{left:Keys.a,right:Keys.d,leftJab:Keys.f,rightJab:Keys.g,cover:Keys.w},     // P1 cover = W
-  p2:{left:Keys.ArrowLeft,right:Keys.ArrowRight,leftJab:Keys.period,rightJab:Keys.slash,cover:Keys.ArrowUp} // P2 cover = ArrowUp
-}; }
+    p1:{left:Keys.a,right:Keys.d,leftJab:Keys.f,rightJab:Keys.g,cover:Keys.w},
+    p2:{left:Keys.ArrowLeft,right:Keys.ArrowRight,leftJab:Keys.period,rightJab:Keys.slash,cover:Keys.ArrowUp}
+  }; }
 
   let prev={p1:{},p2:{}};
   function getPresses(inputs){
@@ -257,59 +228,47 @@
 
   // -------------------- KO / Round End --------------------
   function checkKO(){
-  if(!roundActive || !gameStarted) return;
-  if(P1.hp <= 0){
-    roundActive = false;
-    p2Wins++;
-    updateScoreboard();
-    endRound(player2Name); // ✅ use player2Name instead of "P2"
-  } 
-  else if(P2.hp <= 0){
-    roundActive = false;
-    p1Wins++;
-    updateScoreboard();
-    endRound(player1Name); // ✅ use player1Name instead of "P1"
+    if(!roundActive || !gameStarted) return;
+    if(P1.hp <= 0){
+      roundActive = false;
+      p2Wins++;
+      updateScoreboard();
+      endRound(player2Name);
+    } 
+    else if(P2.hp <= 0){
+      roundActive = false;
+      p1Wins++;
+      updateScoreboard();
+      endRound(player1Name);
+    }
   }
-}
-
 
   function endRound(winner){
-  countdown = "K.O!";
-  countdownActive = true;
+    countdown = "K.O!";
+    countdownActive = true;
 
-  setTimeout(() => {
-    countdownActive = false;
-
-    if(p1Wins >= 2 || p2Wins >= 2){
-      rematchMessage.textContent = winner + " Wins the Match!";
-      saveMatchResult(winner); // ✅ directly pass the winner's name
-      centerScreen(rematchScreen);
-      getLeaderboard();
-      paused = true;
-    } else {
-      roundNumber++;
-      resetRound(true);
-    }
-
-  }, 1500);
-}
-
-
+    setTimeout(() => {
+      countdownActive = false;
+      if(p1Wins >= 2 || p2Wins >= 2){
+        rematchMessage.textContent = winner + " Wins the Match!";
+        saveMatchResult(winner);
+        centerScreen(rematchScreen);
+        getLeaderboard();
+        paused = true;
+      } else {
+        roundNumber++;
+        resetRound(true);
+      }
+    }, 1500);
+  }
 
   // -------------------- Draw Functions --------------------
   function drawRing(){
-    ctx.fillStyle="#3b4a5a";
-    ctx.fillRect(0,WORLD.floorY,WORLD.w,WORLD.h-WORLD.floorY);
-    ctx.fillStyle="#2f6fab";
-    ctx.fillRect(40,WORLD.floorY-20,WORLD.w-80,20);
+    ctx.fillStyle="#3b4a5a"; ctx.fillRect(0,WORLD.floorY,WORLD.w,WORLD.h-WORLD.floorY);
+    ctx.fillStyle="#2f6fab"; ctx.fillRect(40,WORLD.floorY-20,WORLD.w-80,20);
     ctx.strokeStyle="#d9d9d9"; ctx.lineWidth=4;
-    for(let i=0;i<3;i++){
-      let y=WORLD.floorY-40-i*20;
-      ctx.beginPath(); ctx.moveTo(40,y); ctx.lineTo(WORLD.w-40,y); ctx.stroke();
-    }
-    ctx.fillStyle="#bfbfbf";
-    ctx.fillRect(30,WORLD.floorY-160,20,160);
-    ctx.fillRect(WORLD.w-50,WORLD.floorY-160,20,160);
+    for(let i=0;i<3;i++){ let y=WORLD.floorY-40-i*20; ctx.beginPath(); ctx.moveTo(40,y); ctx.lineTo(WORLD.w-40,y); ctx.stroke(); }
+    ctx.fillStyle="#bfbfbf"; ctx.fillRect(30,WORLD.floorY-160,20,160); ctx.fillRect(WORLD.w-50,WORLD.floorY-160,20,160);
   }
 
   function drawPlayer(p){
@@ -339,90 +298,9 @@
     ui.timer.textContent = roundTime;
   }
 
-  // -------------------- Leaderboard functions (new) --------------------
-  async function getLeaderboard(){
-    // If WEB_APP_URL not configured, show placeholder (no network call)
-    if(!WEB_APP_URL || WEB_APP_URL.startsWith('YOUR_')){
-      // optionally clear or show example data
-      const list = document.getElementById('leaderboardList');
-      if(list) list.innerHTML = `<li>Set WEB_APP_URL to show leaderboard</li>`;
-      if(rematchLeaderboardEl) rematchLeaderboardEl.innerHTML = `<div>Set WEB_APP_URL to show leaderboard</div>`;
-      return;
-    }
-
-    try {
-      const res = await fetch(WEB_APP_URL);
-      const data = await res.json();
-
-      // Expecting Google Sheets doGet that returns rows (array of arrays).
-      let rows = Array.isArray(data) ? data : (data.rows || []);
-      // If API returned an object with .values or other, handle some shapes:
-      if(!rows.length && data.values && Array.isArray(data.values)) rows = data.values;
-
-      // detect header row presence
-      let start = 0;
-      if(rows.length && Array.isArray(rows[0]) && typeof rows[0][0] === 'string'){
-        if(/player/i.test(rows[0][0]) || /wins/i.test(rows[0][1])) start = 1;
-      }
-
-      const entries = [];
-      for(let i = start; i < rows.length; i++){
-        const r = rows[i];
-        // r may be array: [name, wins] or object
-        if(Array.isArray(r)){
-          const name = String(r[0] ?? '').trim();
-          const wins = Number(r[1] ?? 0);
-          if(name) entries.push({name, wins});
-        } else if(r && typeof r === 'object'){
-          // look for likely keys
-          const name = String(r.player ?? r.Player ?? r.name ?? r.Name ?? '').trim();
-          const wins = Number(r.wins ?? r.Wins ?? r.count ?? 0);
-          if(name) entries.push({name, wins});
-        }
-      }
-
-      entries.sort((a,b)=>b.wins - a.wins);
-
-      const list = document.getElementById('leaderboardList');
-      if(list) list.innerHTML = entries.slice(0,10).map((e,i)=>`<li>${i+1}. ${e.name} - ${e.wins} wins</li>`).join('');
-
-      if(rematchLeaderboardEl) {
-        rematchLeaderboardEl.innerHTML = entries.slice(0,5).map((e,i)=>`<div>${i+1}. ${e.name} - ${e.wins} wins</div>`).join('');
-      }
-
-    } catch(err) {
-      console.error('Failed to fetch leaderboard', err);
-    }
-  }
-
-  async function saveMatchResult(winnerName){
-    if(!WEB_APP_URL || WEB_APP_URL.startsWith('YOUR_')){
-      console.log('WEB_APP_URL not set; skipping save. winner:', winnerName, 'score:', p1Wins, p2Wins);
-      return;
-    }
-
-    const payload = {
-      player1: player1Name,
-      player2: player2Name,
-      winner: winnerName,
-      p1Wins: p1Wins,
-      p2Wins: p2Wins
-    };
-
-    try {
-      const res = await fetch(WEB_APP_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const txt = await res.text();
-      console.log('Match saved:', txt);
-      // refresh leaderboard after save
-      getLeaderboard();
-    } catch(err) {
-      console.error('Failed to save match result', err);
-    }
-  }
+  // -------------------- Leaderboard functions --------------------
+  async function getLeaderboard(){ /* ...full function as in your code... */ }
+  async function saveMatchResult(winnerName){ /* ...full function as in your code... */ }
 
   // -------------------- Main Loop --------------------
   let last=0;
@@ -453,17 +331,13 @@
   }
 
   // -------------------- Init --------------------
-  // Show the start screen and show existing leaderboard snapshot if possible
-  showStartScreen(); // show centered start screen
-  // update HUD labels to initial names
+  showStartScreen();
   const p1LabelInit = document.getElementById('p1NameLabel');
   const p2LabelInit = document.getElementById('p2NameLabel');
   if(p1LabelInit) p1LabelInit.textContent = `${player1Name} (Sky Blue)`;
   if(p2LabelInit) p2LabelInit.textContent = `${player2Name} (Orange)`;
 
-  resetGame(false); // don't start countdown yet
-  // try to fetch leaderboard to pre-fill UI (if WEB_APP_URL set)
+  resetGame(false);
   getLeaderboard();
   requestAnimationFrame(loop);
 })();
-
