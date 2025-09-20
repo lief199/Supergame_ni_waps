@@ -18,12 +18,14 @@
   const rematchBtn = document.getElementById('rematchBtn');
   const rematchMessage = document.getElementById('rematchMessage');
   const rematchLeaderboardEl = document.getElementById('rematchLeaderboard');
+  // NEW: menu button on rematch screen
+  const menuBtn = document.getElementById('menuBtn');
 
   // -------------------- Player name state --------------------
   let player1Name = 'P1';
   let player2Name = 'P2';
   let gameStarted = false;
-  let paused = true;
+  let paused = true; // paused until start
 
   // -------------------- Center Screens --------------------
   function centerScreen(screen) {
@@ -67,6 +69,16 @@
       gameStarted = true;
     }
   });
+
+  // NEW: Menu button opens the start screen (so players can edit names / restart)
+  if(menuBtn) {
+    menuBtn.addEventListener('click', () => {
+      // hide rematch and show start screen
+      rematchScreen.style.display = 'none';
+      showStartScreen();
+      paused = true;
+    });
+  }
 
   // -------------------- Load Sprites --------------------
   const P1sprites = {
@@ -174,7 +186,6 @@
     p1:{left:Keys.a,right:Keys.d,leftJab:Keys.f,rightJab:Keys.g,cover:Keys.w},
     p2:{left:Keys.ArrowLeft,right:Keys.ArrowRight,leftJab:Keys.period,rightJab:Keys.slash,cover:Keys.ArrowUp}
   }; }
-
   let prev={p1:{},p2:{}};
   function getPresses(inputs){
     const out={p1:{},p2:{}};
@@ -234,7 +245,7 @@
       p2Wins++;
       updateScoreboard();
       endRound(player2Name);
-    } 
+    }
     else if(P2.hp <= 0){
       roundActive = false;
       p1Wins++;
@@ -243,24 +254,53 @@
     }
   }
 
-  function endRound(winner){
-    countdown = "K.O!";
-    countdownActive = true;
+  function endRound(winnerIdentifier) {
+  // winnerIdentifier might already be a name, or might be "P1"/"P2"/"Player 1"/"Player 2".
+  // Normalize into the actual player names used in the HUD.
+  let winnerName = (winnerIdentifier || '').toString();
 
-    setTimeout(() => {
-      countdownActive = false;
-      if(p1Wins >= 2 || p2Wins >= 2){
-        rematchMessage.textContent = winner + " Wins the Match!";
-        saveMatchResult(winner);
-        centerScreen(rematchScreen);
-        getLeaderboard();
-        paused = true;
-      } else {
-        roundNumber++;
-        resetRound(true);
-      }
-    }, 1500);
+  if (!winnerName) {
+    // Fallback: try to pick whoever currently has more wins (defensive)
+    winnerName = (p1Wins > p2Wins) ? player1Name : (p2Wins > p1Wins) ? player2Name : player1Name;
+  } else {
+    // common id -> actual name mapping
+    const id = winnerName.toLowerCase();
+    if (id === 'p1' || id === 'player 1' || id === '1') winnerName = player1Name || 'P1';
+    else if (id === 'p2' || id === 'player 2' || id === '2') winnerName = player2Name || 'P2';
+    // else assume winnerName is already the character name
   }
+
+  // show KO and freeze round logic immediately
+  countdown = "K.O!";
+  countdownActive = true;
+  roundActive = false; // ensure round isn't considered active
+
+  setTimeout(() => {
+    countdownActive = false;
+
+    // compute wins required to win the match (e.g. best of 3 -> 2)
+    const winsNeeded = Math.ceil(maxRounds / 2);
+
+    if (p1Wins >= winsNeeded || p2Wins >= winsNeeded) {
+      // match over
+      rematchMessage.textContent = `${winnerName} Wins the Match!`;
+
+      // Save result (non-blocking). We don't await it here so UI stays responsive.
+      saveMatchResult(winnerName).catch(err => console.error('Save match promise error:', err));
+
+      // show rematch screen and refresh leaderboard snapshot
+      centerScreen(rematchScreen);
+      getLeaderboard(); // optionally async
+      paused = true;
+      gameStarted = false;   // stop game loop actions until player resumes
+      updatePauseMenu();     // update pause overlay UI in case it's shown
+    } else {
+      // next round
+      roundNumber++;
+      resetRound(true);
+    }
+  }, 1500);
+}
 
   // -------------------- Draw Functions --------------------
   function drawRing(){
@@ -298,9 +338,67 @@
     ui.timer.textContent = roundTime;
   }
 
-  // -------------------- Leaderboard functions --------------------
-  async function getLeaderboard(){ /* ...full function as in your code... */ }
-  async function saveMatchResult(winnerName){ /* ...full function as in your code... */ }
+  // -------------------- Leaderboard API URL --------------------
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwsK5WlyioRWhEGVuZON6oFZ5c2SbSj3SoCvgw6yuLVPNWDIKfssg5h4JUsxnI80K1V0A/exec"; // paste your Apps Script exec link here
+
+// -------------------- Leaderboard functions --------------------
+
+async function getLeaderboard() {
+  try {
+    const res = await fetch(SCRIPT_URL);
+    const data = await res.json(); // [{name:"Doe",wins:5},{name:"Alice",wins:2}]
+
+    const list = document.getElementById('leaderboardList');
+    list.innerHTML = "";
+
+    // Sort by wins DESC
+    data.sort((a, b) => b.wins - a.wins);
+
+    data.forEach((row, i) => {
+      const li = document.createElement('li');
+      li.textContent = `#${i+1} ${row.name} — ${row.wins} wins`;
+      list.appendChild(li);
+    });
+  } catch (e) {
+    console.error("Leaderboard fetch error:", e);
+  }
+}
+
+async function saveMatchResult(winnerName) {
+  try {
+    // defensive: ensure SCRIPT_URL is defined
+    if (typeof SCRIPT_URL === 'undefined' || !SCRIPT_URL) {
+      console.warn('SCRIPT_URL not set — skipping leaderboard save.');
+      return;
+    }
+
+    const payload = { winner: winnerName };
+
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      const txt = await res.text().catch(() => '');
+      console.warn('Save result HTTP error', res.status, txt);
+      return;
+    }
+
+    // If your Apps Script returns JSON status, we log it
+    let json;
+    try { json = await res.json(); } catch (e) { json = null; }
+    console.log('Saved match result:', json || 'OK');
+
+    // small delay then refresh leaderboard, helps ensure sheet update visible
+    setTimeout(getLeaderboard, 400);
+
+  } catch (err) {
+    console.error('Save match error:', err);
+  }
+}
+
 
   // -------------------- Main Loop --------------------
   let last=0;
