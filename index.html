@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Pinoy 2D Boxing – Framework</title>
-  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
@@ -17,8 +17,7 @@
   </header>
 
   <div class="wrap">
-    <!-- Pause Menu Overlay -->
-    <div id="pauseMenu" class="pause-overlay" style="display:none;">
+    <div id="pauseMenu" class="pause-overlay">
       <div class="pause-content">
         <h2>Game Paused</h2>
         <p>Press <b>Enter</b> or click Resume</p>
@@ -50,6 +49,11 @@
 
       <!-- small leaderboard snapshot inside rematch screen -->
       <div id="rematchLeaderboard" style="margin-bottom:20px; font-size:18px; max-height:180px; overflow:auto;"></div>
+
+      <!-- NEW: Menu button that shows the startScreen so players can edit names -->
+      <button id="menuBtn" style="font-size:22px;padding:12px 32px;margin-bottom:12px;background:#f59e0b;border:none;color:white;border-radius:10px;cursor:pointer;">
+        Menu (Edit Names)
+      </button>
 
       <button id="rematchBtn" style="font-size:30px;padding:15px 40px;">Rematch</button>
     </div>
@@ -100,9 +104,8 @@
   </div>
 
   <footer>Now uses Left Jab, Right Jab, and Cover only.</footer>
-<script src="./config.js"></script>
-<script src="./game.js"></script>
+
+  <!-- config.js must load before game.js -->
+  <script src="game.js"></script>
 </body>
 </html>
-
-
